@@ -70,9 +70,10 @@ Do not stash. Do not mark local-only data recoverable after a remote push failur
 
 Git and PostgreSQL have no shared atomic transaction. Publish Git first. A failed database
 write can leave an unregistered immutable ref; it must never become the recovery pointer
-without successful fenced registration. Retry/reconciliation by operation ID and safe
-ref retention are future work. A lost response must be resolved by reading state rather
-than blindly repeating a claim.
+without successful fenced registration. Checkpoint-ID retries reuse the immutable local commit/ref; identical database
+registration retries do not move the latest pointer backward. Cross-machine orphan adoption
+and retention automation remain future work. Resolve lost claim responses by reading state
+rather than blindly repeating a claim.
 
 The handoff records objective, completed/current/remaining work, decisions, issues, files,
 context references, recent commands, validation and next action. Embed it in the recovery
@@ -80,8 +81,16 @@ commit before publishing; operational metadata may retain an indexed copy. The h
 omits the checkpoint commit SHA to avoid a self-referential commit hash.
 
 The Phase 0/1 `PostgresState.checkpoint` method validates metadata and fences registration.
-Its precondition is verified remote durability; it does not itself run Git. Never expose
-this method as a worker-supplied assertion that `REMOTE_VERIFIED` is true.
+Its precondition is verified remote durability; it does not itself run Git. The new
+`agentd.checkpoints.service.create_checkpoint` orchestrates authorization, project-remote
+binding, Git capture, remote verification and fenced registration. Never expose the
+metadata method as a worker-supplied assertion that `REMOTE_VERIFIED` is true.
+
+The commit message carries a versioned JSON manifest with the handoff and metadata
+excluding its own commit SHA. Capture takes a POSIX advisory lock; non-cooperating
+writers must already be stopped. It checks the source snapshot and index again before
+creating the ref. Untracked inclusion is explicit, ignored files are refused, and
+path/size/known-secret policy failures abort without publishing. See docs/CHECKPOINTS.md.
 
 ## Acceptance criteria
 
@@ -97,9 +106,9 @@ this method as a worker-supplied assertion that `REMOTE_VERIFIED` is true.
 
 ## API boundaries
 
-Phase 0/1 uses Python methods and a local admin CLI. Reserved `agentd/api`, `agentd/git`,
-`agentd/checkpoints`, and `agentd/handoffs` packages mark future service boundaries.
-HTTP/MCP are deferred until the core is verified. No unauthenticated listener is started.
+Phase 0/1 uses Python methods and a local admin CLI. Reserved `agentd/api` and `agentd/handoffs` packages mark future service
+boundaries. Git capture and checkpoint orchestration now occupy their established packages.
+`agentctl checkpoint` now invokes the trusted Git publisher; HTTP/MCP remain deferred. No unauthenticated listener is started.
 Protocol errors include LEASE_HELD, STALE_LEASE, TASK_NOT_CLAIMABLE, CHECKPOINT_REQUIRED,
 VALIDATED_CHECKPOINT_REQUIRED, OWNER_NOT_REGISTERED and INVALID_PAYLOAD. Clients must
 not interpret a network error or unknown commit outcome as proof of mutation failure.

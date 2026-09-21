@@ -17,7 +17,13 @@ keywords: ["leases", "recovery", "fencing"]
 
 # Checkpoint protocol — v0.1
 
-Checkpoints are immutable recovery commits/refs. Full 40- or 64-character Git OIDs, generation, handoff ID and unique ref are required. REMOTE_VERIFIED is asserted only by the trusted publisher after remote verification. Push first, then fenced DB registration. The current metadata method assumes that verification; the Git publisher is future work. Never use example OIDs for actual recovery. A lost DB response may leave a committed checkpoint; inspect state before retrying.
+Checkpoints are immutable recovery commits/refs. Full 40- or 64-character Git OIDs, generation, handoff ID and unique ref are required. REMOTE_VERIFIED is asserted only by the trusted publisher after remote verification. Push first, then fenced DB registration. The trusted checkpoint service now performs that verification before metadata registration. The lower-level metadata method still requires this precondition. Never use example OIDs for actual recovery. A lost DB response may leave a committed checkpoint; inspect state before retrying.
+
+## Capture and retry
+
+`agentctl checkpoint` captures raw working-file bytes through an alternate index. The commit message embeds a `ZHaiCode checkpoint v0.1` JSON manifest containing the handoff, checkpoint metadata (without its SHA/durability), and selected untracked paths. The public checkpoint schema is returned only after remote verification and database registration. Stable IDs reuse their original local commits. Different payloads for the same ID fail; an identical database retry cannot rewind a newer pointer.
+
+See [operator runbook](../CHECKPOINTS.md) for capture policy, quiescence and limitations.
 
 ## Wire contract
 

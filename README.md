@@ -21,21 +21,27 @@ ZHaiCode is the project/workspace foundation for recoverable agent work across m
 The first milestone is: **start a task on machine A, lose its worker/session, and continue
 on machine B using durable project artifacts and a handoff, without the old conversation.**
 
-## Phase 0/1 status
+## Implementation status
 
 Implemented: Python package and three entry points; task/lease transition model;
 PostgreSQL operational repository and migration; monotonic fencing generations; seven
 JSON Schema protocols and examples; checkpoint/handoff metadata registration; recovery
-bundle reads; transactional and protocol tests. Version: `0.1.0`.
+bundle reads; transactional and protocol tests. Version: `0.2.0` (wire protocols remain v0.1).
+
+The Git checkpoint engine now captures tracked working files and explicitly selected
+untracked files, embeds a structured handoff in the commit message, publishes immutable
+recovery refs, verifies the remote SHA, and fences PostgreSQL registration. It preserves
+the working branch and original index. See [checkpoint operation](docs/CHECKPOINTS.md).
 
 `agentd --migrate` bootstraps PostgreSQL. `agentctl` is a trusted local administrative CLI.
 `agent-watchd --show-policy` exposes the agreed policy from a separate executable.
 The latter two daemon entry points are skeletons, not running network services or supervisors.
 
-**The complete two-machine milestone is not yet implemented.** Git checkpoint capture,
-remote verification, worktree restoration, HTTP authentication/transport, and periodic
-watchdog hooks remain next. Metadata registration is an internal trusted-service boundary;
-it is not proof of an uploaded Git commit. See [the milestone runbook](docs/MILESTONE.md).
+**The complete supervised two-machine milestone is not yet implemented.** Tests now prove
+actual Git publication and fresh-worktree hydration alongside PostgreSQL fencing. The
+operator-facing resume command, HTTP authentication/transport, and running watchdog
+remain next. Capture currently requires stopped writers or cooperating lock users.
+See [the milestone runbook](docs/MILESTONE.md).
 No semantic/vector memory or provider integrations are included.
 
 ## Architecture contract

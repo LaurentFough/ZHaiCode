@@ -6,6 +6,7 @@ export UV_CACHE_DIR := $(CURDIR)/.runtime/uv-cache
 export TMPDIR := $(CURDIR)/.runtime/tmp
 
 .PHONY: venv install check test integration build release schemas
+.PHONY: checkpoint-check checkpoint-help
 venv:
 	mkdir -p .runtime/tmp
 	$(PYTHON) -m venv $(VENV)
@@ -24,3 +25,7 @@ build:
 	$(VENV)/bin/python -m build --no-isolation
 release: check integration build
 	@echo 'Artifacts are in dist/. Review and tag explicitly; no push or merge performed.'
+checkpoint-check:
+	$(VENV)/bin/pytest tests/test_git_checkpoints.py -m 'not postgres'
+checkpoint-help:
+	$(VENV)/bin/agentctl checkpoint --help

@@ -140,6 +140,24 @@ class PostgresState:
         )
         return updated
 
+    def authorize_checkpoint(self, handoff: dict) -> dict:
+        """Fence before Git side effects and return the registered project destination."""
+        validate("handoff", handoff)
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT payload FROM tasks WHERE task_id=%s FOR UPDATE", (handoff["task_id"],)
+            ).fetchone()
+            if not row:
+                raise model.ProtocolError("TASK_NOT_FOUND")
+            task = task_from_payload(row[0])
+            now = conn.execute("SELECT clock_timestamp()").fetchone()[0]
+            model.fence(task, handoff["from_machine"], handoff["from_agent"],
+                        handoff["generation"], now)
+            if handoff["project_id"] != task.project_id or handoff["objective"] != task.objective:
+                raise model.ProtocolError("HANDOFF_MISMATCH")
+            return conn.execute("SELECT payload FROM projects WHERE project_id=%s",
+                                (task.project_id,)).fetchone()[0]
+
     def checkpoint(self, checkpoint: dict, handoff: dict, machine_id: str, agent_id: str):
         """Register a remotely verified commit. Caller is the trusted checkpoint publisher."""
         validate("checkpoint", checkpoint)
@@ -169,6 +187,15 @@ class PostgresState:
             )
             if checkpoint["ref"] != expected_ref:
                 raise model.ProtocolError("CHECKPOINT_REF_MISMATCH")
+            existing = conn.execute(
+                "SELECT payload, handoff FROM checkpoints WHERE checkpoint_id=%s",
+                (checkpoint["checkpoint_id"],),
+            ).fetchone()
+            if existing:
+                if existing != (checkpoint, handoff):
+                    raise model.ProtocolError("CHECKPOINT_CONFLICT")
+                #= A retry must not rewind the latest pointer over a newer checkpoint.
+                return task
             conn.execute(
                 "INSERT INTO checkpoints VALUES (%s, %s, %s, %s, %s)",
                 (

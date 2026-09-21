@@ -36,12 +36,14 @@ future workspace integration inputs; the project/repository name here is exactly
 
 ## Implemented boundaries
 
-| Component | Phase 0/1 responsibility |
+| Component | Current responsibility |
 |---|---|
 | `agentd.leases.model` | Immutable values, pure transitions and fencing checks |
 | `agentd.state.postgres` | Transactions, registration, task state, events and recovery metadata |
 | `agentd.protocol` | Portable wire conversion and closed JSON Schema validation |
-| `agentctl` | Trusted local administrative commands with JSON output |
+| `agentd.git.checkpoint` | Isolated-index capture, immutable refs and remote verification |
+| `agentd.checkpoints.service` | Authorize → publish → fence operational registration |
+| `agentctl` | Trusted local administrative and checkpoint commands with JSON output |
 | `agentd` executable | Explicit schema bootstrap only |
 | `agent-watchd` executable | Separate policy skeleton; no background heartbeat yet |
 
@@ -51,7 +53,7 @@ Only the trusted service database role may mutate them. A future migration runne
 be additive and checksum-aware; v1 bootstrap is idempotent and serialized, not a general
 schema-upgrade engine. Production operational backup/restore must preserve generations.
 
-## Recovery flow to build next
+## Recovery flow and current coverage
 
 1. Create a task-specific isolated worktree and acquire a lease.
 2. Worker writes code and structured handoff content; watchdog observes it independently.
@@ -62,10 +64,15 @@ schema-upgrade engine. Production operational backup/restore must preserve gener
    and reads AGENTS.md, SPEC.md, task data and handoff before resuming.
 7. A waking later loses permission for all authoritative writes with its stale generation.
 
+Steps 3–4 are implemented for stopped/cooperating writers; tests manually exercise
+fetching the published commit into a fresh worktree after a new claim. Automated
+resume and worker/watchdog lifecycle integration remain next.
+
 A fencing token cannot stop arbitrary filesystem writes or independent Git pushes by
 credentials outside agentd's control. Workers must use isolated worktrees and cannot
-possess credentials that overwrite shared authoritative refs. The future Git publisher
-needs create-only refs and server-side authorization; tokens alone cannot fence Git.
+possess credentials that overwrite shared authoritative refs. The publisher uses an empty expected-old-OID compare-and-create push and verifies the
+resulting ref. Production remotes still need server-side create-only authorization;
+a privileged independent Git credential can bypass the publisher.
 
 ## Failure semantics
 

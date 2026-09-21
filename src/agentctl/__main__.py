@@ -10,6 +10,7 @@ from pathlib import Path
 import psycopg
 
 from agentd import __version__
+from agentd.checkpoints.service import create_checkpoint
 from agentd.leases.model import ProtocolError, Task, TaskStatus
 from agentd.logging_config import configure
 from agentd.protocol import task_payload
@@ -31,6 +32,14 @@ def parser():
     create.add_argument("task_id")
     create.add_argument("project_id")
     create.add_argument("objective")
+    checkpoint = commands.add_parser("checkpoint")
+    checkpoint.add_argument("checkpoint_id")
+    checkpoint.add_argument("--repository", type=Path, default=Path.cwd())
+    checkpoint.add_argument("--handoff", type=Path, required=True)
+    checkpoint.add_argument("--remote", default="origin")
+    checkpoint.add_argument("--include-untracked", action="append", default=[])
+    checkpoint.add_argument("--quiesced", action="store_true", required=True,
+                            help="Confirm all non-cooperating worktree writers are stopped")
     for name in ("status", "recovery", "expire", "claim", "renew", "release", "transition"):
         command = commands.add_parser(name)
         command.add_argument("task_id")
@@ -64,6 +73,12 @@ def main(argv=None):
             output = task_payload(state.get(args.task_id))
         elif args.command == "recovery":
             output = state.recovery(args.task_id)
+        elif args.command == "checkpoint":
+            output = create_checkpoint(
+                state, args.repository, args.checkpoint_id,
+                json.loads(args.handoff.read_text()), remote=args.remote,
+                included_untracked=args.include_untracked, quiesced=args.quiesced,
+            )
         else:
             kwargs = {
                 key: getattr(args, key)

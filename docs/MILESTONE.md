@@ -24,15 +24,18 @@ keywords: ["leases", "recovery", "fencing"]
 Real PostgreSQL tests exercise competing claims, deadline expiry, durable generation
 increments, rejection of stale owners, metadata recovery by a fresh service instance,
 and readiness gating. Protocol tests establish portable payload shapes. These are foundation
-checks; fixture checkpoint hashes are not actual remote Git objects.
+checks. The checkpoint engine adds real Git/local-remote integration tests: tracked dirty
+and explicitly selected untracked files are committed and published, PostgreSQL records
+verified metadata, and a fresh generation-2 worker can read the commit in a new worktree.
+The older metadata-only tests still deliberately use fixture hashes.
 
 ## Next implementation sequence
 
-1. Implement trusted Git capture/publisher using an alternate index, isolated worktrees,
-   quiesced writers and policy-controlled dirty/untracked capture. Include handoff JSON in
-   the commit. Preserve user branches and index; do not use stash or overwrite recovery refs.
-2. Verify pushed remote refs and only then call fenced checkpoint registration. Handle
-   response loss and retries with stable operation IDs and orphan-ref reconciliation.
+1. **Implemented:** trusted alternate-index Git capture/publisher with explicit untracked
+   selection, path/size/known-secret checks, JSON handoff in the commit, and unchanged
+   branch/index. Operators must stop non-cooperating writers.
+2. **Implemented:** create-only remote publication, SHA verification, fencing and local-ID
+   retries without pointer rewind. Cross-machine orphan adoption and retention remain open.
 3. Implement authenticated agentd transport; expose worker operations through it, not DB
    credentials. Add resume orchestration that acquires a lease before hydrating a worktree.
 4. Implement separate agent-watchd supervision, heartbeat scheduling, periodic/event

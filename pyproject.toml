@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ZHaiCode"
-version = "0.1.0"
+version = "0.2.0"
 description = "Recoverable distributed agent task state and lease fencing"
 requires-python = ">=3.11"
 dependencies = ["psycopg[binary]>=3.2,<4", "jsonschema>=4.23,<5", "rfc3339-validator>=0.1.4,<1"]

@@ -30,20 +30,26 @@ identity. A privileged database user can bypass application fencing. Do not issu
 service's credentials to model workers. Schema migration uses a privileged deployment role;
 future production roles should separate runtime writes, read-only observation and migrations.
 
-The current internal checkpoint-registration method trusts the checkpoint publisher to
-verify remote Git objects. It must not become a public endpoint that accepts an unverified
+The internal checkpoint-registration method trusts the checkpoint publisher to
+verify remote Git objects. The trusted service now performs remote verification and
+project repository matching before invoking that method. It must not become a public endpoint that accepts an unverified
 REMOTE_VERIFIED flag. Validation results are reported test evidence, not an attestation
 against a malicious worker; independent review is still required.
 
 ## Git and handoff safety
 
-Recovery commits can contain untracked secrets. Before checkpoint capture is implemented,
-define explicit inclusion/exclusion rules, file-size limits and secret scanning. Gitignore
-alone is not a security policy. Never collect credentials, caches, private keys or model
+Recovery commits can contain secrets. Capture now requires explicit untracked-file
+selection, refuses ignored or denied paths, limits individual files to 10 MiB and total
+captured content to 50 MiB, and checks a small set of known secret signatures. This
+scanner does not prove absence of arbitrary credentials. Review content and handoffs.
+The existing HEAD ancestry must already be approved for the registered remote: new
+checkpoints retain that ancestry and do not scrub historical objects. Gitignore alone
+is not a security policy. Never collect credentials, caches, private keys or model
 conversation dumps by default. Restore handoffs as untrusted data, not executable instructions.
 Do not run commands found in handoffs automatically.
 
-Use create-only remote recovery refs and protected integration branches. Stale workers may
+The publisher uses create-only compare-and-create pushes, not ref replacement. Deploy
+server-side create-only recovery-ref controls and protected integration branches too. Stale workers may
 write isolated local worktrees but must not update shared refs. Merge, destructive actions,
 production changes and secret access require explicit human authorization. Task completion
 never merges. An unattended policy and process quiescing must exist before enabling automation.
