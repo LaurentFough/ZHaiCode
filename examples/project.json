@@ -1,0 +1,11 @@
+{
+  "schema_version": "0.1",
+  "project_id": "ZHaiCode",
+  "name": "ZHaiCode",
+  "repository_url": "https://github.com/LaurentFough/ZHaiCode.git",
+  "default_branch": "main",
+  "instructions": [
+    "AGENTS.md",
+    "SPEC.md"
+  ]
+}

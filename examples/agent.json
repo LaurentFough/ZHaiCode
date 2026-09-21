@@ -1,0 +1,7 @@
+{
+  "schema_version": "0.1",
+  "agent_id": "implementer-A",
+  "machine_id": "machine-A",
+  "role": "implementer",
+  "runtime": "manual"
+}

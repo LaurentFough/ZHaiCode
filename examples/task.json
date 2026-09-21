@@ -1,0 +1,10 @@
+{
+  "schema_version": "0.1",
+  "task_id": "TASK-001",
+  "project_id": "ZHaiCode",
+  "objective": "Implement recovery",
+  "status": "QUEUED",
+  "generation": 0,
+  "lease": null,
+  "latest_checkpoint": null
+}

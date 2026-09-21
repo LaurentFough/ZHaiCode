@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/LaurentFough/ZHaiCode/schemas/checkpoint.schema.json",
+  "title": "ZHaiCode checkpoint v0.1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "checkpoint_id",
+    "task_id",
+    "generation",
+    "commit",
+    "base_commit",
+    "ref",
+    "handoff_id",
+    "created_at",
+    "durability"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.1"
+    },
+    "checkpoint_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "generation": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9223372036854775807
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "base_commit": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+    },
+    "ref": {
+      "type": "string",
+      "pattern": "^refs/agents/[A-Za-z0-9_-]+/checkpoints/[1-9][0-9]*/[A-Za-z0-9_-]+$"
+    },
+    "handoff_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "durability": {
+      "const": "REMOTE_VERIFIED"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "schema_version": "0.1",
+  "task_id": "TASK-001",
+  "machine_id": "machine-A",
+  "agent_id": "implementer-A",
+  "generation": 1,
+  "acquired_at": "2026-09-21T00:00:00Z",
+  "heartbeat_at": "2026-09-21T00:00:00Z",
+  "expires_at": "2026-09-21T00:30:00Z"
+}

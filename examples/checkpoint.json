@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1",
+  "checkpoint_id": "CP-001",
+  "task_id": "TASK-001",
+  "generation": 1,
+  "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "base_commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "ref": "refs/agents/TASK-001/checkpoints/1/CP-001",
+  "handoff_id": "HO-001",
+  "created_at": "2026-09-21T00:10:00Z",
+  "durability": "REMOTE_VERIFIED"
+}

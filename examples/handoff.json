@@ -1,0 +1,36 @@
+{
+  "schema_version": "0.1",
+  "handoff_id": "HO-001",
+  "task_id": "TASK-001",
+  "project_id": "ZHaiCode",
+  "generation": 1,
+  "from_machine": "machine-A",
+  "from_agent": "implementer-A",
+  "objective": "Implement recovery",
+  "completed": [
+    "Lease model"
+  ],
+  "working_on": [
+    "Recovery test"
+  ],
+  "remaining": [
+    "Transport"
+  ],
+  "decisions": [],
+  "issues": [],
+  "files": [
+    "SPEC.md"
+  ],
+  "context": [
+    "AGENTS.md",
+    "SPEC.md"
+  ],
+  "next_action": "Run the recovery integration test",
+  "commands": [
+    "make check"
+  ],
+  "validation": {
+    "status": "not_run",
+    "summary": "Initial example only"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": "0.1",
+  "machine_id": "machine-A",
+  "os": "linux",
+  "arch": "amd64",
+  "capabilities": [
+    "python"
+  ]
+}

@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ZHaiCode"
+version = "0.1.0"
+description = "Recoverable distributed agent task state and lease fencing"
+requires-python = ">=3.11"
+dependencies = ["psycopg[binary]>=3.2,<4", "jsonschema>=4.23,<5", "rfc3339-validator>=0.1.4,<1"]
+
+[project.optional-dependencies]
+dev = ["hatchling>=1.26,<2", "pytest>=8,<10", "ruff>=0.11,<1", "build>=1.2,<2"]
+
+[project.scripts]
+agentd = "agentd.__main__:main"
+agent-watchd = "agent_watchd.__main__:main"
+agentctl = "agentctl.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agentd", "src/agent_watchd", "src/agentctl"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"schemas" = "agentd/schemas"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["postgres: requires ZHAICODE_TEST_DSN pointing at a dedicated PostgreSQL database"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
